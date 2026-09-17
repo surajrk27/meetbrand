@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/* ============================================================
+   MEETBRAND DESIGN TOKENS
+   Monochrome base (deep warm black / warm off-white / white)
+   + one signal accent. Two-family type system with dramatic
+   weight contrast. All values are CSS variables so brand
+   updates never require touching component code.
+   ============================================================ */
+
+:root {
+  /* --- Color: base --- */
+  --mb-ink: #120f0c;           /* deep warm black — primary dark surface */
+  --mb-ink-soft: #1c1814;      /* raised surface on ink (cards, nav-scrolled) */
+  --mb-ink-line: rgba(243, 238, 227, 0.14);   /* hairline on dark */
+  --mb-paper: #f3eee3;         /* warm off-white — primary light surface */
+  --mb-paper-soft: #e9e2d2;    /* raised surface on paper */
+  --mb-paper-line: rgba(18, 15, 12, 0.12);    /* hairline on light */
+  --mb-white: #ffffff;
+
+  /* --- Color: signal accent (energetic, brand-specific) --- */
+  --mb-signal: #ff3b5c;        /* "Ignite" — coral-signal, not terracotta/vermilion/acid-green */
+  --mb-signal-ink: #12060a;    /* text placed on the accent */
+  --mb-signal-dim: #c22e48;    /* pressed / low-emphasis accent */
+
+  /* --- Semantic aliases (what components consume) --- */
+  --bg: var(--mb-ink);
+  --fg: var(--mb-paper);
+  --bg-inverse: var(--mb-paper);
+  --fg-inverse: var(--mb-ink);
+  --surface: var(--mb-ink-soft);
+  --line: var(--mb-ink-line);
+  --accent: var(--mb-signal);
+  --accent-ink: var(--mb-signal-ink);
+
+  /* --- Type families --- */
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Fluid type scale (clamp: min, viewport-relative, max) --- */
+  --step-hero: clamp(2.75rem, 4vw + 2rem, 7.5rem);
+  --step-h1: clamp(2.25rem, 3vw + 1.5rem, 4.5rem);
+  --step-h2: clamp(1.75rem, 2vw + 1.25rem, 3rem);
+  --step-h3: clamp(1.25rem, 1vw + 1rem, 1.75rem);
+  --step-body-lg: clamp(1.125rem, 0.4vw + 1rem, 1.375rem);
+  --step-body: 1rem;
+  --step-small: 0.875rem;
+  --step-micro: 0.75rem;
+
+  /* --- Layout --- */
+  --container-max: 90rem;      /* 1440px */
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --section-y: clamp(4rem, 8vw, 8rem);
+
+  /* --- Motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 200ms;
+  --dur-base: 500ms;
+  --dur-slow: 900ms;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-bg-inverse: var(--bg-inverse);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-paper: var(--mb-paper);
+  --color-paper-soft: var(--mb-paper-soft);
+  --color-ink: var(--mb-ink);
+  --color-white: var(--mb-white);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --breakpoint-xs: 23.5rem;   /* 376px — modern phone portrait */
+  --breakpoint-fold: 47.5rem; /* 760px — unfolded foldables (Z Fold, etc.) */
+}
+
+* {
+  min-width: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01" 1, "cv01" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Respect reduced-motion at the root: smooth scroll + all custom
+   motion utilities below fall back to instant. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible, high-contrast focus ring — required for keyboard nav,
+   never suppressed with outline:none anywhere in this codebase. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Skip link: hidden until focused, then jumps above everything */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: top var(--dur-fast) var(--ease-out);
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Container + section rhythm shared by every page */
+.mb-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.mb-section {
+  padding-block: var(--section-y);
+}
+
+/* Hero entrance — pure CSS, not JS/IntersectionObserver-gated. This is
+   the LCP element: it must never depend on JS to become visible, and
+   must never ship opacity:0 as its resting/no-JS state. animation-
+   fill-mode:backwards paints the *from* state only until the animation
+   starts (immediately), then lands on and stays at opacity:1. Reduced
+   motion is already handled by the global media query above, which
+   collapses this to ~0 duration. */
+@keyframes mb-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.mb-hero-fade {
+  animation: mb-hero-in 0.7s var(--ease-out) both;
+}
+.mb-hero-fade-1 {
+  animation-delay: 0.05s;
+}
+.mb-hero-fade-2 {
+  animation-delay: 0.15s;
+}
+.mb-hero-fade-3 {
+  animation-delay: 0.25s;
+}
+
+/* Clients marquee — pure CSS, no JS/layout thrash. Paused entirely
+   under reduced motion via the .motion-reduce:animate-none utility
+   plus the global reduced-motion block above as a backstop. */
+@keyframes mb-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: mb-marquee 28s linear infinite;
+}
+
+/* Landscape phones: hero shouldn't force a full extra scroll —
+   cap height rather than using 100dvh blindly. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mb-hero-min {
+    min-height: auto;
+    padding-block: 4rem;
+  }
+}
